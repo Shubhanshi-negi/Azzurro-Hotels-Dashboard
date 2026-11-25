@@ -1,0 +1,41 @@
+services:
+  mongo:
+    image: mongo:8
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+
+  api:
+    build: .
+    restart: unless-stopped
+    command: ["npm", "run", "start:api"]
+    environment:
+      API_PORT: 4000
+      MONGODB_URI: mongodb://mongo:27017/azzurro-insights
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3-flash-preview}
+      WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:3000}
+    depends_on:
+      - mongo
+
+  web:
+    build:
+      context: .
+      args:
+        API_INTERNAL_URL: http://api:4000/api
+    restart: unless-stopped
+    command: ["npm", "run", "start"]
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      API_INTERNAL_URL: http://api:4000/api
+      NEXT_PUBLIC_API_URL: /api
+    depends_on:
+      - api
+
+volumes:
+  mongo-data:
