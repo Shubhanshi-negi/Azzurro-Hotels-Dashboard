@@ -481,7 +481,23 @@ async function initializeDatabase() {
           ? "MongoDB authentication failed. Check the Atlas database username and password, and URL-encode any reserved password characters."
           : "MongoDB connection failed. Check the connection URI, Atlas network access list, and cluster status.";
       mongoConnectionMessage = message;
-      console.error(message);
+      if (error instanceof Error) {
+        const code =
+          "code" in error && (typeof error.code === "string" || typeof error.code === "number")
+            ? error.code
+            : undefined;
+        const safeMessage = error.message
+          .replace(/mongodb(\+srv)?:\/\/[^\s/@]+@/gi, "mongodb$1://[redacted]@")
+          .replace(/((?:password|passwd|pwd)\s*[=:]\s*)[^\s&]+/gi, "$1[redacted]")
+          .slice(0, 500);
+        console.error("MongoDB connection failed.", {
+          name: error.name,
+          ...(code === undefined ? {} : { code }),
+          message: safeMessage,
+        });
+      } else {
+        console.error("MongoDB connection failed with a non-Error value.");
+      }
     }
     if (isMongoConnected()) {
       await PropertyModel.bulkWrite(
