@@ -92,6 +92,10 @@ docker compose up --build
 
 Set `GEMINI_API_KEY` or `OPENAI_API_KEY` in the Compose environment to enable AI. The MongoDB data is stored in the `mongo-data` volume. The API seeds the demo reviews only when the review collection is empty.
 
+### Vercel
+
+The Next.js app and Express API are both served by Vercel: `api/[...path].ts` exposes the existing `/api/*` routes as a Node.js Function, and production builds do not rewrite those routes to localhost. Vercel needs `MONGODB_URI` for review management and AI endpoints; add `GEMINI_API_KEY` or `OPENAI_API_KEY` to enable AI. Without those integrations, the dashboard still loads its clearly labelled, read-only synthetic demo data.
+
 For separate web/API hosts:
 
 - **API:** configure `API_PORT`, `MONGODB_URI`, `WEB_ORIGIN`, and either Gemini (`GEMINI_API_KEY`, `GEMINI_MODEL`) or OpenAI-compatible settings (`OPENAI_API_KEY`, `OPENAI_MODEL`, `OPENAI_BASE_URL`).

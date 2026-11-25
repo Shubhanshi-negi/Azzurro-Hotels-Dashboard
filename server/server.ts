@@ -14,11 +14,12 @@ import type { GuestReview } from "../lib/types";
 
 dotenv.config({ path: [".env.local", ".env"] });
 
-const app = express();
+export const app = express();
 const port = Number(process.env.API_PORT || 4000);
 const allowedOrigins = (process.env.WEB_ORIGIN || "http://localhost:3000")
   .split(",")
   .map((origin) => origin.trim());
+if (process.env.VERCEL === "1") app.set("trust proxy", 1);
 const isMongoConnected = () => mongoose.connection.readyState === 1;
 const isMongoConfigured = () => Boolean(process.env.MONGODB_URI);
 let mongoConnectionMessage: string | null = null;
@@ -460,7 +461,14 @@ app.use((error: unknown, _request: Request, response: Response, _next: NextFunct
   sendError(error, response);
 });
 
-async function start() {
+let initialization: Promise<void> | null = null;
+
+export function initialize() {
+  if (!initialization) initialization = initializeDatabase();
+  return initialization;
+}
+
+async function initializeDatabase() {
   const mongoUri = process.env.MONGODB_URI;
   if (mongoUri) {
     try {
@@ -493,10 +501,16 @@ async function start() {
     mongoConnectionMessage = "Set MONGODB_URI to enable database-backed review management.";
     console.warn(mongoConnectionMessage);
   }
+}
+
+async function start() {
+  await initialize();
   app.listen(port, () => console.info(`Azzurro insights API listening on port ${port}.`));
 }
 
-start().catch((error: unknown) => {
-  console.error("API startup failed:", error);
-  process.exitCode = 1;
-});
+if (require.main === module) {
+  start().catch((error: unknown) => {
+    console.error("API startup failed:", error);
+    process.exitCode = 1;
+  });
+}
