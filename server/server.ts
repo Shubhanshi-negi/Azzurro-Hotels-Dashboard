@@ -1,15 +1,17 @@
 import { randomUUID } from "node:crypto";
+import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import cors from "cors";
 import dotenv from "dotenv";
 import express, { type NextFunction, type Request, type Response } from "express";
 import { rateLimit } from "express-rate-limit";
 import helmet from "helmet";
 import mongoose from "mongoose";
-import { filterReviews, summarizeReviews } from "./analytics";
-import { demoProperties, demoReviews } from "./data";
-import { answerOperationsQuestion, analyzeReviews, isAiConfigured } from "./insights";
-import { PropertyModel, ReviewModel } from "./models";
-import { parseReviewCsv, stringifyReviews } from "./review-import";
+import { filterReviews, summarizeReviews } from "./analytics.js";
+import { demoProperties, demoReviews } from "./data.js";
+import { answerOperationsQuestion, analyzeReviews, isAiConfigured } from "./insights.js";
+import { PropertyModel, ReviewModel } from "./models.js";
+import { parseReviewCsv, stringifyReviews } from "./review-import.js";
 import type { GuestReview } from "../lib/types";
 
 dotenv.config({ path: [".env.local", ".env"] });
@@ -508,7 +510,7 @@ async function start() {
   app.listen(port, () => console.info(`Azzurro insights API listening on port ${port}.`));
 }
 
-if (require.main === module) {
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   start().catch((error: unknown) => {
     console.error("API startup failed:", error);
     process.exitCode = 1;

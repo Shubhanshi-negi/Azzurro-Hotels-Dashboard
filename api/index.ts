@@ -1,6 +1,7 @@
-const { app, initialize } = require("../server/server") as typeof import("../server/server");
+import type { Request, Response } from "express";
+import { app, initialize } from "../server/server.js";
 
-async function handler(request: import("express").Request, response: import("express").Response) {
+export default async function handler(request: Request, response: Response) {
   try {
     const url = new URL(request.url ?? "/", "http://vercel.local");
     const apiPath = url.searchParams.get("__vercel_path");
@@ -18,5 +19,3 @@ async function handler(request: import("express").Request, response: import("exp
     response.status(500).json({ error: "The API could not be initialized." });
   }
 }
-
-module.exports = handler;
