@@ -1,8 +1,6 @@
-import type { Request, Response } from "express";
-
 const { app, initialize } = require("../server/server") as typeof import("../server/server");
 
-async function handler(request: Request, response: Response) {
+async function handler(request: import("express").Request, response: import("express").Response) {
   try {
     const url = new URL(request.url ?? "/", "http://vercel.local");
     const apiPath = url.searchParams.get("__vercel_path");
